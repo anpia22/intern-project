@@ -43,7 +43,7 @@ const statusStyles = {
 };
 
 const RecentActivity = () => (
-  <div className="bg-white rounded-xl shadow p-4 w-full max-w-4xl mx-auto">
+  <div className="bg-white rounded-xl shadow-2xl p-4 w-full max-w-4xl mx-auto">
       <div className="flex items-center mb-2 justify-between">
       <span className="text-base font-semibold">Recent Activity</span>
       <button className="bg-blue-100 p-1 rounded-md">
