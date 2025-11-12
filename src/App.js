@@ -6,7 +6,7 @@ import Clients from "./Components/Client/Clients";
 const App = () => {
   const [activePage, setActivePage] = useState("Dashboard");
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-white-400 via-white-100 to-white-300 overflow-x-auto">
+    <div className="flex min-h-screen bg-gradient-to-br from-white-400 via-white-100 to--300 overflow-x-auto">
       <Sidebar activePage={activePage} setActivePage={setActivePage} />
       <div className="flex-1 p-2 sm:p-4 md:p-8 overflow-auto">
         {activePage === "Dashboard" && <Dashboard />}

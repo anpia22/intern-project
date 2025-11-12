@@ -70,7 +70,7 @@ const RecentActivity = () => (
               <div className="text-[10px] text-gray-400 truncate">{item.email}</div>
             </div>
           </div>
-          <span className={`px-2 py-1 rounded text-[11px] font-medium ${statusStyles[item.status]}`}>{item.status}</span>
+          <span className={`px-2 py-1 rounded text-[11px] font-medium w-fit ${statusStyles[item.status]}`}>{item.status}</span>
           <span className="truncate">{item.id}</span>
           <span className="truncate">{item.time}</span>
           <span className="font-semibold">{item.amount}</span>
