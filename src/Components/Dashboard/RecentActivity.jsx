@@ -1,3 +1,6 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFilter } from '@fortawesome/free-solid-svg-icons';
+
 const activityData = [
   {
     avatar: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHVh_a2DacQBzMLqCbFDZlztPMItzefHeWXNTOK0AJYonA1TSPydH6kYRHNDWB00JAauw&usqp=CAU",
@@ -43,14 +46,11 @@ const statusStyles = {
 };
 
 const RecentActivity = () => (
-  <div className="bg-white rounded-xl shadow-2xl p-4 w-full max-w-4xl mx-auto">
+  <div className="bg-white rounded-xl shadow-2xl p-4 w-full max-w-4xl mx-auto col-span-2">
       <div className="flex items-center mb-2 justify-between">
       <span className="text-base font-semibold">Recent Activity</span>
-      <button className="bg-blue-100 p-1 rounded-md">
-        <svg width="16" height="16" fill="none" stroke="currentColor">
-          <circle cx="8" cy="8" r="6" strokeWidth="1.5" />
-          <path d="M5 8h6" strokeWidth="1.5" />
-        </svg>
+      <button className="bg-blue-100 px-2 py-1 rounded-md">
+        <FontAwesomeIcon icon={faFilter} />
       </button>
     </div>
     <div className="grid grid-cols-[2fr,1fr,1fr,1fr,1fr] text-gray-500 font-medium text-xs border-b pb-1 mb-2">
