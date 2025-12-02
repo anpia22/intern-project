@@ -1,12 +1,16 @@
-import StatCard from "../CardSection/StatCard";
+import StatsCardsGrid from "../Shared/StatsCardsGrid";
 import RevenueChart from "./RevenueChart";
-import RecentActivity from "./RecentActivity";
+import RecentActivityTable from "../Shared/RecentActivityTable";
 import SealsNavigator from "./SealsNavigator";
+import DashboardHeader from "../Header/DashboardHeader";
 
 const Dashboard = () => (
-  <div className="mt-10">
+  <div className="mt-1 p-4">
+     <div className="flex-shrink-0 bg-white rounded-t-xl pt-4 pb-2 z-30">
+          <DashboardHeader />
+        </div>
     <div className="flex flex-col md:flex-row md:items-center gap-2 justify-between">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
       <div className="flex gap-2 mt-2 md:mt-0">
         <button className="text-blue-700 font-medium px-4 py-2 rounded-xl bg-white hover:bg-blue-100 transition">Subscription</button>
         <button className="text-white bg-blue-600 px-6 py-2 rounded-xl flex items-center font-medium hover:bg-blue-700 transition">
@@ -28,32 +32,22 @@ const Dashboard = () => (
     </div>
   <div className="w-full max-w-[1400px] mx-auto py-6">
     
+    {/* stats card section */}
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-        <StatCard
-          title="Total Leads"
-          value={12832}
-          percent={20.1}
-          delta={2123}
-        />
-        <StatCard
-          title="Active Leads"
-          value={12832}
-          percent={20.1}
-          delta={2123}
-        />
-        <StatCard
-          title="Subscriptions"
-          value={12832}
-          percent={20.1}
-          delta={2123}
-        />
-        <StatCard title="leads" value={12832} percent={20.1} delta={2123} />
-      </div>
+      <StatsCardsGrid
+        stats={[
+          { title: "Total Leads", value: 12832, percent: 20.1, delta: 2123 },
+          { title: "Active Leads", value: 12832, percent: 20.1, delta: 2123 },
+          { title: "Subscriptions", value: 12832, percent: 20.1, delta: 2123 },
+          { title: "leads", value: 12832, percent: 20.1, delta: 2123 },
+        ]}
+      />
       <RevenueChart />
     </div>
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <RecentActivity />
+      <div className="bg-white rounded-xl shadow-lg p-4 w-full max-w-4xl mx-auto col-span-2">
+        <RecentActivityTable title="Recent Activity" />
+      </div>
       <SealsNavigator />
     </div>
   </div>

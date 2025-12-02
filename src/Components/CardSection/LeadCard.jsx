@@ -1,7 +1,15 @@
-const LeadCard = ({ lead, badgeclass }) => {
-  
+const LeadCard = ({ lead, badgeClass, onClick }) => {
+  // Map status to display text
+  const getStatusText = (status) => {
+    if (status === "In Process") return "In Process";
+    return status;
+  };
+
   return (
-    <div className="bg-white rounded-2xl shadow px-6 py-5 mb-5">
+    <div 
+      className="bg-white rounded-2xl shadow px-6 py-5 mb-5 cursor-pointer hover:shadow-lg transition-shadow"
+      onClick={onClick}
+    >
       {/* Profile and Menu */}
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-4">
@@ -20,19 +28,17 @@ const LeadCard = ({ lead, badgeclass }) => {
       <div className="border-b border-gray-200 my-2"></div>
       {/* Contact Info */}
       <div className="text-sm text-gray-800 mb-1 flex items-center gap-2">
-        {/* <div className="flex items-center gap-2"> */}
-          <span>📞</span>
-          <span>{lead.phone}</span>
-        </div>
-        <div className="text-sm text-gray-800 flex items-center gap-2 mb-3">
-          <span>✉️</span>
-          <span className="truncate">{lead.email}</span>
-        </div>
-      {/* </div> */}
+        <span>📞</span>
+        <span>{lead.phone}</span>
+      </div>
+      <div className="text-sm text-gray-800 flex items-center gap-2 mb-3">
+        <span>✉️</span>
+        <span className="truncate">{lead.email}</span>
+      </div>
       
       {/* Status Badge */}
-      <div className={`${badgeclass} w-fit mt-2 inline-block px-5 py-2 text-sm rounded-lg font-semibold`}>
-        {lead.status}
+      <div className={`${badgeClass?.badge || "bg-gray-200 text-gray-700"} w-fit mt-2 inline-block px-5 py-2 text-sm rounded-lg font-semibold`}>
+        {getStatusText(lead.status)}
       </div>
     </div>
   );
