@@ -64,7 +64,7 @@ const MonthlyBarChart = () => {
                 <text
                   x="10"
                   y={yPos + 4}
-                  className="fill-gray-400 text-xs font-medium"
+                  className="fill-gray-400 text-[9px] font-medium"
                   textAnchor="start"
                 >
                   {yValue}k
@@ -104,7 +104,7 @@ const MonthlyBarChart = () => {
                   x={monthLabelX}
                   y="155"
                   textAnchor="middle"
-                  className="fill-gray-600 text-xs font-normal"
+                  className="fill-gray-600 text-[9px] font-normal"
                 >
                   {data.month}
                 </text>

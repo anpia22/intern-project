@@ -71,48 +71,93 @@ const RecentActivityTable = ({
 
   return (
     <div className="w-full">
-      {/* Header */}
-      <div className="flex items-center mb-2 justify-between">
-        <span className="text-base font-semibold">{title}</span>
-        {showFilter && (
-          <button className="bg-blue-100 px-2 py-1 rounded-md">
-            <FontAwesomeIcon icon={faFilter} />
-          </button>
-        )}
-      </div>
+      {/* Mobile View */}
+      <div className="md:hidden">
+        {/* Header */}
+        <div className="flex items-center mb-2 justify-between">
+          <span className="text-sm font-semibold">{title}</span>
+          {showFilter && (
+            <button className="bg-blue-100 px-2 py-1 rounded-md">
+              <FontAwesomeIcon icon={faFilter} className="text-xs" />
+            </button>
+          )}
+        </div>
 
-      {/* Column Headers */}
-      <div className="grid grid-cols-[2fr,1fr,1fr,1fr,1fr] text-gray-500 font-medium text-sm border-b pb-1 mb-2">
-        <div>Customer</div>
-        <div>Status</div>
-        <div>Customer ID</div>
-        <div>Retained</div>
-        <div>Plan</div>
-      </div>
-
-      {/* Data Rows */}
-      <div className="divide-y text-sm">
-        {displayData.map((item) => (
-          <div key={item.id || item.customerId} className="grid grid-cols-[2fr,1fr,1fr,1fr,1fr] items-center py-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <img 
-                src={item.avatar} 
-                alt={item.name} 
-                className="w-7 h-7 rounded-full object-cover" 
-              />
-              <div>
-                <div className="truncate">{item.name}</div>
-                <div className="text-xs text-gray-400 truncate">{item.email}</div>
+        {/* Mobile Data Rows - Stacked */}
+        <div className="divide-y text-xs">
+          {displayData.map((item) => (
+            <div key={item.id || item.customerId} className="space-y-2 py-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <img 
+                  src={item.avatar} 
+                  alt={item.name} 
+                  className="w-6 h-6 rounded-full object-cover flex-shrink-0" 
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-medium">{item.name}</div>
+                  <div className="text-xs text-gray-400 truncate">{item.email}</div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className={`px-2 py-1 rounded text-xs font-medium ${statusStyles[item.status] || statusStyles["Member"]}`}>
+                  {item.status}
+                </span>
+                <span className="font-semibold text-xs">{item.plan || item.amount}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span>ID: {item.customerId || item.id}</span>
+                <span>{item.retained || item.time}</span>
               </div>
             </div>
-            <span className={`px-2 py-1 rounded text-sm font-medium w-fit ${statusStyles[item.status] || statusStyles["Member"]}`}>
-              {item.status}
-            </span>
-            <span className="truncate">{item.customerId || item.id}</span>
-            <span className="truncate">{item.retained || item.time}</span>
-            <span className="font-semibold">{item.plan || item.amount}</span>
-          </div>
-        ))}
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop View */}
+      <div className="hidden md:block">
+        {/* Header */}
+        <div className="flex items-center mb-2 justify-between">
+          <span className="text-base font-semibold">{title}</span>
+          {showFilter && (
+            <button className="bg-blue-100 px-2 py-1 rounded-md">
+              <FontAwesomeIcon icon={faFilter} />
+            </button>
+          )}
+        </div>
+
+        {/* Column Headers */}
+        <div className="grid grid-cols-[2fr,1fr,1fr,1fr,1fr] text-gray-500 font-medium text-sm border-b pb-1 mb-2">
+          <div>Customer</div>
+          <div>Status</div>
+          <div>Customer ID</div>
+          <div>Retained</div>
+          <div>Plan</div>
+        </div>
+
+        {/* Data Rows */}
+        <div className="divide-y text-sm">
+          {displayData.map((item) => (
+            <div key={item.id || item.customerId} className="grid grid-cols-[2fr,1fr,1fr,1fr,1fr] items-center py-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <img 
+                  src={item.avatar} 
+                  alt={item.name} 
+                  className="w-7 h-7 rounded-full object-cover" 
+                />
+                <div>
+                  <div className="truncate">{item.name}</div>
+                  <div className="text-xs text-gray-400 truncate">{item.email}</div>
+                </div>
+              </div>
+              <span className={`px-2 py-1 rounded text-sm font-medium w-fit ${statusStyles[item.status] || statusStyles["Member"]}`}>
+                {item.status}
+              </span>
+              <span className="truncate">{item.customerId || item.id}</span>
+              <span className="truncate">{item.retained || item.time}</span>
+              <span className="font-semibold">{item.plan || item.amount}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

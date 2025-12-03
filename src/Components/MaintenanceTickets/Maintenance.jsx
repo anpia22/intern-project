@@ -253,7 +253,7 @@ const Maintenance = forwardRef((props, ref) => {
             onClick={() => setCalendarView("Month")}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               calendarView === "Month"
-                ? "bg-blue-600 text-white"
+                ? "bg-[#3887ee] text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
@@ -263,7 +263,7 @@ const Maintenance = forwardRef((props, ref) => {
             onClick={() => setCalendarView("Week")}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               calendarView === "Week"
-                ? "bg-blue-600 text-white"
+                ? "bg-[#3887ee] text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
@@ -273,7 +273,7 @@ const Maintenance = forwardRef((props, ref) => {
             onClick={() => setCalendarView("Day")}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               calendarView === "Day"
-                ? "bg-blue-600 text-white"
+                ? "bg-[#3887ee] text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
@@ -468,7 +468,7 @@ const Maintenance = forwardRef((props, ref) => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  className="flex-1 bg-[#3887ee] text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                 >
                   Schedule
                 </button>

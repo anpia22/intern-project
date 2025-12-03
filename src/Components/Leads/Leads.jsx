@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFilter,
   faDownload,
   faCalendar,
   faChevronDown,
+  faAngleDown,
 } from "@fortawesome/free-solid-svg-icons";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import LeadCard from "../CardSection/LeadCard";
 import LeadHeader from "../Header/LeadHeader";
 import LeadCardsList from "./LeadCardsList";
@@ -200,6 +204,9 @@ const statusColumns = [
 const Leads = () => {
   const [selectedLead, setSelectedLead] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const exportMenuRef = useRef(null);
+  const leadsContentRef = useRef(null);
 
   // Calculate actual counts for each status
   const statusColumnsWithCounts = statusColumns.map((status) => {
@@ -220,9 +227,126 @@ const Leads = () => {
     setSelectedLead(null);
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target)) {
+        setShowExportMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const getFileName = () => {
+    return `leads_${new Date().toISOString().split("T")[0]}`;
+  };
+
+  const getExportData = () => {
+    return {
+      headers: ["Name", "Phone", "Email", "Status", "Time"],
+      data: leadData.map((lead) => [
+        lead.name,
+        lead.phone,
+        lead.email,
+        lead.status,
+        lead.time,
+      ]),
+    };
+  };
+
+  const handleExportCSV = () => {
+    const { headers, data } = getExportData();
+    const csvContent = [
+      headers.join(","),
+      ...data.map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${getFileName()}.csv`);
+    link.style.visibility = "hidden";
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    URL.revokeObjectURL(url);
+    setShowExportMenu(false);
+  };
+
+  const handleExportExcel = () => {
+    const { headers, data } = getExportData();
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+    const colWidths = headers.map(() => ({ wch: 20 }));
+    ws["!cols"] = colWidths;
+    XLSX.utils.book_append_sheet(wb, ws, "Leads Data");
+    XLSX.writeFile(wb, `${getFileName()}.xlsx`);
+    setShowExportMenu(false);
+  };
+
+  const handleExportPDF = async () => {
+    if (!leadsContentRef.current) return;
+
+    try {
+      const canvas = await html2canvas(leadsContentRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 10;
+
+      pdf.setFontSize(18);
+      pdf.text("Leads Report", pdfWidth / 2, 15, { align: "center" });
+
+      pdf.addImage(imgData, "PNG", imgX, imgY + 10, imgWidth * ratio, imgHeight * ratio);
+
+      const { headers, data } = getExportData();
+      let yPos = imgY + imgHeight * ratio + 20;
+
+      pdf.setFontSize(10);
+      data.forEach((row, index) => {
+        if (yPos > pdfHeight - 20) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        row.forEach((cell, cellIndex) => {
+          pdf.text(`${headers[cellIndex]}: ${cell}`, 20, yPos);
+          yPos += 5;
+        });
+        yPos += 3;
+      });
+
+      pdf.save(`${getFileName()}.pdf`);
+      setShowExportMenu(false);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("Error generating PDF. Please try again.");
+      setShowExportMenu(false);
+    }
+  };
+
   return (
     <>
-      <div className="w-full max-w-[1600px] mx-auto py-6 px-2">
+      <div ref={leadsContentRef} className="w-full max-w-7xl mx-auto pb-6 px-2">
         {/* Header with Title and Action Buttons */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
@@ -232,11 +356,43 @@ const Leads = () => {
               <FontAwesomeIcon icon={faFilter} />
             </button>
 
-            {/* Export Button */}
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium">
-              <span>Export</span>
-              <FontAwesomeIcon icon={faChevronDown} size="sm" />
-            </button>
+            {/* Export Button with Dropdown */}
+            <div className="relative" ref={exportMenuRef}>
+              <button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="bg-[#3887ee] text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium"
+              >
+                <span>Export</span>
+                <FontAwesomeIcon icon={faDownload} />
+                <FontAwesomeIcon 
+                  icon={faAngleDown} 
+                  className={`text-xs transition-transform ${showExportMenu ? "rotate-180" : ""}`}
+                />
+              </button>
+              
+              {showExportMenu && (
+                <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden">
+                  <button
+                    onClick={handleExportCSV}
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
+                  >
+                    <span>📄 CSV</span>
+                  </button>
+                  <button
+                    onClick={handleExportExcel}
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2 border-t border-gray-200"
+                  >
+                    <span>📊 Excel</span>
+                  </button>
+                  <button
+                    onClick={handleExportPDF}
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2 border-t border-gray-200"
+                  >
+                    <span>📑 PDF</span>
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Date Button */}
             <button className="bg-gray-100 text-gray-600 px-6 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-gray-200 transition-colors">

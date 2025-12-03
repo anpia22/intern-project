@@ -5,8 +5,12 @@ import {
   faDownload,
   faChevronDown,
   faChevronUp,
+  faAngleDown,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import Tickets from "./Tickets";
 import Maintenance from "./Maintenance";
 
@@ -130,18 +134,39 @@ const MaintenanceTickets = () => {
   };
 
   // Export functions
-  const handleExportPDF = () => {
+  const getFileName = () => {
+    return `${activeView === "Ticket" ? "tickets" : "maintenance"}_${new Date().toISOString().split('T')[0]}`;
+  };
+
+  const getExportData = () => {
+    if (activeView === "Ticket") {
+      return {
+        headers: ["Ticket ID", "Subject", "Customer", "Priority", "Status"],
+        data: tickets.map(t => [t.id, t.subject, t.customer, t.priority, t.status]),
+      };
+    }
+    return {
+      headers: ["Maintenance Data"],
+      data: [["Maintenance export data"]],
+    };
+  };
+
+  const handleExportCSV = () => {
     setShowExportDropdown(false);
-    // Create a simple PDF export
-    const data = activeView === "Ticket" 
-      ? tickets.map(t => `${t.id} | ${t.subject} | ${t.customer} | ${t.priority} | ${t.status}`).join('\n')
-      : "Maintenance data export (PDF)";
-    
-    const blob = new Blob([data], { type: 'text/plain' });
+    const { headers, data } = getExportData();
+    const csvContent = [
+      headers.join(","),
+      ...data.map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${activeView === "Ticket" ? "tickets" : "maintenance"}_${new Date().toISOString().split('T')[0]}.txt`;
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${getFileName()}.csv`);
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -150,29 +175,69 @@ const MaintenanceTickets = () => {
 
   const handleExportExcel = () => {
     setShowExportDropdown(false);
-    // Create CSV format for Excel
-    const headers = activeView === "Ticket" 
-      ? "Ticket ID,Subject,Customer,Priority,Status"
-      : "Maintenance Export";
-    
-    const rows = activeView === "Ticket"
-      ? tickets.map(t => `${t.id},${t.subject},${t.customer},${t.priority},${t.status}`).join('\n')
-      : "Maintenance data";
-    
-    const csvContent = headers + '\n' + rows;
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${activeView === "Ticket" ? "tickets" : "maintenance"}_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const { headers, data } = getExportData();
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+    const colWidths = headers.map(() => ({ wch: 20 }));
+    ws["!cols"] = colWidths;
+    XLSX.utils.book_append_sheet(wb, ws, activeView === "Ticket" ? "Tickets" : "Maintenance");
+    XLSX.writeFile(wb, `${getFileName()}.xlsx`);
+  };
+
+  const handleExportPDF = async () => {
+    setShowExportDropdown(false);
+    try {
+      const contentElement = document.querySelector('.bg-white.rounded-2xl.shadow-lg.p-6');
+      if (!contentElement) {
+        alert("Error: Could not find content to export.");
+        return;
+      }
+
+      const canvas = await html2canvas(contentElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+
+      pdf.setFontSize(18);
+      pdf.text(`${activeView === "Ticket" ? "Tickets" : "Maintenance"} Report`, pdfWidth / 2, 15, { align: "center" });
+
+      pdf.addImage(imgData, "PNG", imgX, 25, imgWidth * ratio, imgHeight * ratio);
+
+      const { headers, data } = getExportData();
+      let yPos = 25 + imgHeight * ratio + 10;
+
+      pdf.setFontSize(10);
+      data.forEach((row, index) => {
+        if (yPos > pdfHeight - 20) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        row.forEach((cell, cellIndex) => {
+          pdf.text(`${headers[cellIndex]}: ${cell}`, 20, yPos);
+          yPos += 5;
+        });
+        yPos += 3;
+      });
+
+      pdf.save(`${getFileName()}.pdf`);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("Error generating PDF. Please try again.");
+    }
   };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto py-6 px-4 relative">
+    <div className="w-full max-w-7xl mx-auto pb-6 px-4 relative">
       {/* Main Content */}
       <div className="bg-white rounded-2xl shadow-lg p-6">
         {/* Header */}
@@ -186,14 +251,14 @@ const MaintenanceTickets = () => {
             {activeView === "Ticket" ? (
               <button
                 onClick={handleCreateTicket}
-                className="bg-blue-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium"
+                className="bg-[#3887ee] text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium"
               >
                 + Create New Ticket
               </button>
             ) : (
               <button
                 onClick={handleScheduleMaintenance}
-                className="bg-blue-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium"
+                className="bg-[#3887ee] text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium"
               >
                 + Schedule Maintenance
               </button>
@@ -205,7 +270,7 @@ const MaintenanceTickets = () => {
                 onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                 className={`rounded-lg px-4 py-3 transition-colors ${
                   showFilterDropdown
-                    ? "bg-blue-300 text-white"
+                    ? "bg-[#3887ee] text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
@@ -236,7 +301,7 @@ const MaintenanceTickets = () => {
                               type="checkbox"
                               checked={statusFilters[status]}
                               onChange={() => handleStatusFilterChange(status)}
-                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                              className="w-4 h-4 text-[#3887ee] border-gray-300 rounded focus:ring-blue-500"
                             />
                             <span className="text-sm text-gray-700">{status}</span>
                           </label>
@@ -268,7 +333,7 @@ const MaintenanceTickets = () => {
                               type="checkbox"
                               checked={priorityFilters[priority]}
                               onChange={() => handlePriorityFilterChange(priority)}
-                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                              className="w-4 h-4 text-[#3887ee] border-gray-300 rounded focus:ring-blue-500"
                             />
                             <span className="text-sm text-gray-700">{priority}</span>
                           </label>
@@ -284,27 +349,36 @@ const MaintenanceTickets = () => {
             <div className="relative" ref={exportDropdownRef}>
               <button
                 onClick={() => setShowExportDropdown(!showExportDropdown)}
-                className={`bg-blue-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium ${
+                className={`bg-[#3887ee] text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium ${
                   showExportDropdown ? "bg-blue-700" : ""
                 }`}
               >
                 <span>Export</span>
                 <FontAwesomeIcon icon={faDownload} />
+                <FontAwesomeIcon 
+                  icon={faAngleDown} 
+                  className={`text-xs transition-transform ${showExportDropdown ? "rotate-180" : ""}`}
+                />
               </button>
               {showExportDropdown && (
-                <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+                <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-20 overflow-hidden">
                   <button
-                    onClick={handleExportPDF}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-t-lg text-gray-700 text-sm"
+                    onClick={handleExportCSV}
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
                   >
-                    Pdf
+                    <span>📄 CSV</span>
                   </button>
-                  <hr className="border-gray-200" />
                   <button
                     onClick={handleExportExcel}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-b-lg text-gray-700 text-sm"
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2 border-t border-gray-200"
                   >
-                    Excel
+                    <span>📊 Excel</span>
+                  </button>
+                  <button
+                    onClick={handleExportPDF}
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2 border-t border-gray-200"
+                  >
+                    <span>📑 PDF</span>
                   </button>
                 </div>
               )}
@@ -327,7 +401,7 @@ const MaintenanceTickets = () => {
                       setShowDropdown(false);
                     }}
                     className={`w-full text-left px-4 py-2 hover:bg-gray-100 rounded-t-lg ${
-                      activeView === "Ticket" ? "bg-blue-50 text-blue-600" : "text-gray-700"
+                      activeView === "Ticket" ? "bg-blue-50 text-[#3887ee]" : "text-gray-700"
                     }`}
                   >
                     Ticket
@@ -338,7 +412,7 @@ const MaintenanceTickets = () => {
                       setShowDropdown(false);
                     }}
                     className={`w-full text-left px-4 py-2 hover:bg-gray-100 rounded-b-lg ${
-                      activeView === "Maintenance" ? "bg-blue-50 text-blue-600" : "text-gray-700"
+                    activeView === "Maintenance" ? "bg-blue-50 text-[#3887ee]" : "text-gray-700"
                     }`}
                   >
                     Maintenance

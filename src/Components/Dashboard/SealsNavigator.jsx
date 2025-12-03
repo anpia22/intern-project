@@ -9,14 +9,14 @@ const SealsNavigator = ({ percentage = 63, online = 60, offline = 40 }) => {
   const visibleLength = (percentage / 100) * arcLength;
   
   return (
-    <div className="bg-white rounded-3xl shadow-lg p-8 max-w-lg mx-auto">
-      <h2 className="text-2xl font-bold mb-8">Seals Navigator</h2>
+    <div className="bg-white rounded-xl md:rounded-3xl shadow-lg p-4 md:p-8 w-full max-w-lg mx-auto">
+      <h2 className="text-lg md:text-2xl font-bold mb-4 md:mb-8">Seals Navigator</h2>
       
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
         {/* Gauge Section */}
-        <div className="flex flex-col items-center">
-          <div className="relative" style={{ width: '200px', height: '120px' }}>
-            <svg width="200" height="120" viewBox="0 0 200 120" className="overflow-visible">
+        <div className="flex flex-col items-center w-full md:w-auto">
+          <div className="relative w-full max-w-[200px] md:max-w-none" style={{ height: '90px' }}>
+            <svg width="200" height="120" viewBox="0 0 200 120" className="overflow-visible w-full h-full" preserveAspectRatio="xMidYMid meet">
               <defs>
                 <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#3887EE" />
@@ -55,17 +55,17 @@ const SealsNavigator = ({ percentage = 63, online = 60, offline = 40 }) => {
           </div>
           
           <div className="mt-2 text-center">
-            <div className="text-4xl font-bold">{percentage}%</div>
-            <div className="text-gray-500 text-sm mt-1">Sales percentage</div>
+            <div className="text-2xl md:text-4xl font-bold">{percentage}%</div>
+            <div className="text-gray-500 text-xs md:text-sm mt-1">Sales percentage</div>
           </div>
         </div>
         
         {/* Legend Section */}
-        <div className="flex flex-col gap-4 ml-8">
-          <div className="text-base">
+        <div className="flex flex-row md:flex-col gap-4 md:gap-4 md:ml-8 w-full md:w-auto justify-center md:justify-start">
+          <div className="text-sm md:text-base">
             Online Store <span className="font-semibold">{online}%</span>
           </div>
-          <div className="text-base">
+          <div className="text-sm md:text-base">
             Offline Store <span className="font-semibold">{offline}%</span>
           </div>
         </div>

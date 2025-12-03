@@ -121,7 +121,7 @@ const GeneralSettings = () => {
                   />
                 )}
               </div>
-              <label className="bg-blue-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium cursor-pointer">
+              <label className="bg-[#3887ee] text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium cursor-pointer">
                 <FontAwesomeIcon icon={faUpload} size="sm" />
                 Upload Logo
                 <input

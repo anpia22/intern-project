@@ -6,7 +6,7 @@ const plans = [
     name: "Free Starter Tier",
     price: "₹0",
     leads: "30 verified leads",
-    button: "Start Free Trial",
+    button: "Choose Plan",
     highlight: false,
     features: [
       "30 verified leads",
@@ -22,7 +22,7 @@ const plans = [
     name: "Growth Plan",
     price: "₹11,999 /150 Leads",
     leads: "150 verified leads",
-    button: "Book Growth Plan",
+    button: "Choose Plan",
     highlight: true,
     tag: "MOST POPULAR",
     features: [
@@ -42,7 +42,7 @@ const plans = [
     name: "Basic Plan",
     price: "₹9,999 /100 Leads",
     leads: "100 verified leads",
-    button: "Start Basic Plan",
+    button: "Choose Plan",
     highlight: false,
     features: [
       "100 verified leads",
@@ -60,7 +60,7 @@ const bottomPlans = [
     name: "Verified Leads Plan",
     price: "₹15,999 /100 Leads",
     leads: "100 verified & filtered leads",
-    button: "Get Sample Leads",
+    button: "Choose Plan",
     features: [
       "Everything in Growth Plan",
       "100 verified & filtered leads",
@@ -78,7 +78,7 @@ const bottomPlans = [
     name: "Enterprise Plan",
     price: "Custom Pricing /lead",
     leads: "Custom bulk lead delivery",
-    button: "Schedule Enterprise Plan",
+    button: "Choose Plan",
     features: [
       "Everything in Verified Leads Plan",
       "Custom bulk lead delivery",
@@ -101,43 +101,44 @@ const SubscriptionPlans = () => {
   const [selectedDuration] = useState("Monthly");
 
   return (
-    <div className="mx-auto px-4 py-10 max-w-7xl">
-      <h1 className="text-2xl font-bold mb-6">Subscription Plans</h1>
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Subscription Plans</h1>
 
       {/* Top Plans */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12 lg:mb-16">
         {plans.map((plan) => (
           <div
             key={plan.name}
-            className={`relative flex flex-col justify-between border rounded-2xl p-8 bg-white shadow-sm h-full min-h-[520px] ${
-              plan.highlight ? "border-blue-600 shadow-xl scale-[1.03]" : ""
+            className={`relative flex flex-col justify-between border rounded-2xl overflow-hidden p-4 sm:p-6 lg:p-8 bg-white shadow-sm h-full min-h-[400px] sm:min-h-[480px] lg:min-h-[520px] hover:border-[#95d5fd] hover:bg-[#eff9ff] transition-colors ${
+              plan.highlight ? "border-blue-600 shadow-xl md:scale-[1.03] hover:border-[#95d5fd] hover:bg-[#eff9ff] transition-colors" : ""
             }`}
           >
             {plan.highlight && (
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-6 py-1 rounded-full text-sm font-semibold">
+              <div className="absolute top-0 left-0 w-full bg-[#3887ee] text-white py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold shadow-md">
                 MOST POPULAR
               </div>
             )}
 
-            <div>
-              <h3 className="text-lg font-semibold">{plan.name}</h3>
-              <p className="text-2xl font-bold mt-1">{plan.price}</p>
-              <p className="text-gray-500 mt-1">{plan.leads}</p>
+            <div className={plan.highlight ? "pt-8 sm:pt-10 lg:pt-12" : ""}>
+              <h3 className="text-base sm:text-lg font-semibold">{plan.name}</h3>
+              <p className="text-xl sm:text-2xl font-bold mt-1">{plan.price}</p>
+              <p className="text-sm sm:text-base text-gray-500 mt-1">{plan.leads}</p>
 
-              <ul className="mt-6 space-y-2 text-sm text-gray-700">
+              <ul className="mt-4 sm:mt-6 space-y-2 text-xs sm:text-sm text-gray-700">
                 {plan.features.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    <span className="text-blue-600 font-bold">✔</span> {f}
+                  <li key={i} className="flex items-start sm:items-center gap-2">
+                    <span className="text-blue-600 font-bold flex-shrink-0 mt-0.5 sm:mt-0">✔</span> 
+                    <span>{f}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
             <button
-              className={`mt-8 w-full py-2 font-semibold rounded-lg ${
+              className={`mt-6 sm:mt-8 w-full py-2 sm:py-2.5 text-sm sm:text-base font-semibold rounded-lg border hover:border-blue-600 hover:border transition-colors ${
                 plan.highlight
-                  ? "bg-blue-600 text-white"
-                  : "bg-blue-100 text-blue-600"
+                  ? "hover:bg-[#3887ee] hover:text-white bg-white text-[#3887ee] hover:border-[#3887ee] hover:border transition-colors"
+                  : "hover:text-[#3887ee] bg-[#3887ee] text-white hover:bg-white hover:border-[#3887ee] hover:border transition-colors"
               }`}
             >
               {plan.button}
@@ -147,27 +148,28 @@ const SubscriptionPlans = () => {
       </div>
 
       {/* Bottom Plans */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-2/3 mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-full md:w-2/3 mx-auto">
         {bottomPlans.map((plan) => (
           <div
             key={plan.name}
-            className="flex flex-col justify-between border rounded-2xl p-8 bg-white shadow-sm h-full min-h-[520px]"
+            className="flex flex-col justify-between border rounded-2xl p-4 sm:p-6 lg:p-8 bg-white shadow-sm h-full min-h-[400px] sm:min-h-[480px] lg:min-h-[520px] hover:border-[#95d5fd] hover:bg-[#eff9ff] transition-colors"
           >
             <div>
-              <h3 className="text-xl font-semibold">{plan.name}</h3>
-              <p className="text-2xl font-bold mt-1">{plan.price}</p>
-              <p className="text-gray-500 mt-1">{plan.leads}</p>
+              <h3 className="text-lg sm:text-xl font-semibold">{plan.name}</h3>
+              <p className="text-xl sm:text-2xl font-bold mt-1">{plan.price}</p>
+              <p className="text-sm sm:text-base text-gray-500 mt-1">{plan.leads}</p>
 
-              <ul className="mt-6 space-y-2 text-sm text-gray-700">
+              <ul className="mt-4 sm:mt-6 space-y-2 text-xs sm:text-sm text-gray-700">
                 {plan.features.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    <span className="text-blue-600 font-bold">✔</span> {f}
+                  <li key={i} className="flex items-start sm:items-center gap-2">
+                    <span className="text-blue-600 font-bold flex-shrink-0 mt-0.5 sm:mt-0">✔</span> 
+                    <span>{f}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <button className="mt-8 w-full py-2 font-semibold rounded-lg bg-blue-600 text-white">
+            <button className="mt-6 sm:mt-8 w-full py-2 sm:py-2.5 text-sm sm:text-base font-semibold rounded-lg border bg-[#3887ee] text-white hover:bg-white hover:text-[#3887ee] hover:border-[#3887ee] hover:border transition-colors">
               {plan.button}
             </button>
           </div>

@@ -51,7 +51,7 @@ const Settings = ({ setActivePage }) => {
   };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto py-6 px-4">
+    <div className="w-full max-w-7xl mx-auto pb-6 px-4">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Setting</h1>
 
       <div className="flex flex-col lg:flex-row gap-6">
@@ -99,7 +99,7 @@ const Settings = ({ setActivePage }) => {
               </button>
               <button
                 onClick={handleSave}
-                className="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors font-medium"
+                className="bg-[#3887ee] text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors font-medium"
               >
                 Save Changes
               </button>

@@ -1,6 +1,4 @@
 "use client";
-import { faDownload, faFilter } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import OtpCard from "./Otpbox";
 import PaymentModal from "./PaymentModalProps";
@@ -142,7 +140,8 @@ const PaymentDetailsForm = ({ onSuccess }) => {
   };
 
   return (
-    <div className="relative">
+    <div className="w-full max-w-7xl mx-auto px-6 pb-6">
+      <div className="relative">
       {/* OTP MODAL */}
       {showOtp && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -192,20 +191,8 @@ const PaymentDetailsForm = ({ onSuccess }) => {
 
       {/* MAIN PAYMENT FORM */}
       <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
-        <div className="flex flex-row justify-between items-center mb-4">
+        <div className="mb-4">
           <div className="text-2xl font-semibold mb-6">Payment Details</div>
-
-          <div className="flex flex-row gap-3 items-center">
-            <FontAwesomeIcon
-              icon={faFilter}
-              className="bg-blue-300 rounded-lg px-4 py-3 text-slate-900"
-            />
-
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-xl flex flex-row gap-3">
-              <span>Export</span>
-              <FontAwesomeIcon icon={faDownload} />
-            </button>
-          </div>
         </div>
 
         <form className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl mx-auto mt-6">
@@ -418,6 +405,7 @@ const PaymentDetailsForm = ({ onSuccess }) => {
             </button>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );

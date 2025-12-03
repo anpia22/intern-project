@@ -59,7 +59,7 @@ const MyProfile = () => {
             )}
           </div>
           <div className="flex flex-col gap-2">
-            <label className="bg-blue-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium cursor-pointer w-fit">
+            <label className="bg-[#3887ee] text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium cursor-pointer w-fit">
               <FontAwesomeIcon icon={faUpload} size="sm" />
               Upload Photo
               <input

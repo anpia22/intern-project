@@ -112,7 +112,7 @@ const Profile = () => {
   }, []);
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto py-6 px-4">
+    <div className="w-full max-w-7xl mx-auto pb-6 px-4">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
@@ -120,13 +120,13 @@ const Profile = () => {
         <div className="flex items-center gap-3">
           {/* Add New User Button */}
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium"
+            className="bg-[#3887ee] text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium"
           >
             <FontAwesomeIcon icon={faPlus} size="sm" /> Add New User
           </button>
 
           {/* Filter Button */}
-          <div className="relative" ref={filterDropdownRef}>
+          {/* <div className="relative" ref={filterDropdownRef}>
             <button
               onClick={() => setShowFilterDropdown(!showFilterDropdown)}
               className={`rounded-lg px-4 py-3 transition-colors ${
@@ -144,10 +144,10 @@ const Profile = () => {
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* Export Button */}
-          <div className="relative" ref={exportDropdownRef}>
+          {/* <div className="relative" ref={exportDropdownRef}>
             <button
               onClick={() => setShowExportDropdown(!showExportDropdown)}
               className="bg-blue-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium"
@@ -171,7 +171,7 @@ const Profile = () => {
                 </button>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -201,7 +201,7 @@ const Profile = () => {
           <div className="flex gap-3">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="bg-blue-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium"
+              className="bg-[#3887ee] text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium"
             >
               <FontAwesomeIcon icon={faCamera} size="sm" /> Change Photo
             </button>
@@ -390,7 +390,7 @@ const Profile = () => {
             </button>
             <button
               type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors font-medium"
+              className="bg-[#3887ee] text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors font-medium"
             >
               Save Changes
             </button>

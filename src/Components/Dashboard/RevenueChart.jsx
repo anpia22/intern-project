@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 const defaultData = [
   { month: "Jan", profit: 32000, loss: 14000 },
@@ -12,6 +12,8 @@ const RevenueChart = ({
   totalRevenue = 86400.12,
   growth = 10,
 }) => {
+  const [tooltip, setTooltip] = useState(null); // { index, type: 'profit' | 'loss', x, y, value }
+
   const maxValue = 40000; // Scale to 40k to match reference
   const barWidth = 32;
   const barGap = 80;
@@ -27,25 +29,45 @@ const RevenueChart = ({
   // Calculate Y position for a given value (0-40k maps to chartBottom to chartTop)
   const getYPosition = (value) => chartBottom - scale(value);
 
+  // Format month name to date string
+  const formatMonthDate = (month) => {
+    const monthMap = {
+      Jan: "January",
+      Feb: "February",
+      Mar: "March",
+      Apr: "April",
+      May: "May",
+      Jun: "June",
+      Jul: "July",
+      Aug: "August",
+      Sep: "September",
+      Oct: "October",
+      Nov: "November",
+      Dec: "December",
+    };
+    return monthMap[month] || month;
+  };
+
   return (
     <div
-      className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-3xl flex flex-col"
-      style={{ minHeight: "420px" }}
+      className="bg-white rounded-xl md:rounded-2xl shadow-lg p-3 md:p-8 w-full max-w-3xl flex flex-col"
+      style={{ minHeight: "300px" }}
     >
       {/* Header */}
       <div className="flex flex-row justify-between items-start mb-2">
         <div>
-          <div className="text-2xl font-bold mb-2">Revenue</div>
+          <div className="text-base md:text-2xl font-bold mb-1 md:mb-2">Revenue</div>
         </div>
-        <button className="flex items-center gap-2 bg-blue-50 text-blue-900 px-4 py-2 rounded-lg font-medium text-sm hover:bg-blue-100">
+        <button className="flex items-center gap-1 md:gap-2 bg-blue-50 text-blue-900 px-2 md:px-4 py-1 md:py-2 rounded-lg font-medium text-xs md:text-sm hover:bg-blue-100">
           Month
           <svg
-            width="16"
-            height="16"
+            width="12"
+            height="12"
             viewBox="0 0 16 16"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
+            className="md:w-4 md:h-4"
           >
             <rect x="3" y="5" width="10" height="8" rx="1" />
             <line x1="6" y1="2" x2="6" y2="6" />
@@ -54,22 +76,22 @@ const RevenueChart = ({
         </button>
       </div>
       {/* Legend */}
-      <div className="flex gap-4 mb-4 justify-between">
-        <div className="flex items-baseline gap-2">
-          <span className="text-lg font-semibold">
+      <div className="flex flex-col sm:flex-row gap-2 md:gap-4 mb-3 md:mb-4 justify-between">
+        <div className="flex items-baseline gap-1 md:gap-2">
+          <span className="text-sm md:text-lg font-semibold">
             ${totalRevenue.toLocaleString()}
           </span>
-          <span className="text-green-600 font-semibold text-sm">
+          <span className="text-green-600 font-semibold text-xs md:text-sm">
             ↑+{growth}%
           </span>
         </div>
-        <div className="flex items-center gap-2 justify-end">
-          <span className="flex items-center gap-2 text-sm font-medium">
-            <span className="inline-block w-3 h-3 rounded-full bg-blue-600"></span>
+        <div className="flex items-center gap-2 md:gap-2 justify-start sm:justify-end">
+          <span className="flex items-center gap-1 md:gap-2 text-xs md:text-sm font-medium">
+            <span className="inline-block w-2 h-2 md:w-3 md:h-3 rounded-full bg-[#3887ee]"></span>
             Profit
           </span>
-          <span className="flex items-center gap-2 text-sm font-medium">
-            <span className="inline-block w-3 h-3 rounded-full bg-blue-300"></span>
+          <span className="flex items-center gap-1 md:gap-2 text-xs md:text-sm font-medium">
+            <span className="inline-block w-2 h-2 md:w-3 md:h-3 rounded-full bg-blue-300"></span>
             Loss
           </span>
         </div>
@@ -77,14 +99,14 @@ const RevenueChart = ({
       {/* Chart Area */}
       <div
         className="flex-1 flex items-end w-full relative"
-        style={{ minHeight: "240px" }}
+        style={{ minHeight: "180px" }}
       >
         <svg
           viewBox="0 0 420 200"
           width="100%"
           height="100%"
           className="w-full"
-          style={{ minHeight: "240px" }}
+          style={{ minHeight: "180px" }}
         >
           {/* Baseline at 0 */}
           <line
@@ -127,9 +149,9 @@ const RevenueChart = ({
           {/* Dynamic Bars */}
           {data.map((m, i) => {
             const xPos = startX + i * barGap;
-            const showTooltip = i === 2; // Show tooltip for March
             const lossBarX = xPos + barWidth / 2 + 4;
             const lossBarCenterX = lossBarX + barWidth / 4;
+            const profitBarCenterX = xPos + barWidth / 4;
             const profitBarHeight = scale(m.profit);
             const lossBarHeight = scale(m.loss);
             const profitBarTopY = chartBottom - profitBarHeight;
@@ -146,17 +168,38 @@ const RevenueChart = ({
               return `M ${x} ${bottomY} L ${x} ${topY + cornerRadius} Q ${x} ${topY} ${x + cornerRadius} ${topY} L ${x + width - cornerRadius} ${topY} Q ${x + width} ${topY} ${x + width} ${topY + cornerRadius} L ${x + width} ${bottomY} Z`;
             };
 
+            const handleBarInteraction = (type, centerX, topY, value) => {
+              setTooltip({
+                index: i,
+                type,
+                x: centerX,
+                y: topY,
+                value,
+                month: m.month,
+              });
+            };
+
+            const handleBarLeave = () => {
+              setTooltip(null);
+            };
+
             return (
               <g key={m.month}>
                 {/* Profit Bar - sharp bottom, rounded top */}
                 <path
                   d={createBarPath(xPos, profitBarTopY, barWidthHalf, profitBarHeight)}
-                  className="fill-blue-600"
+                  className="fill-[#3887ee] cursor-pointer"
+                  onMouseEnter={() => handleBarInteraction('profit', profitBarCenterX, profitBarTopY, m.profit)}
+                  onMouseLeave={handleBarLeave}
+                  onClick={() => handleBarInteraction('profit', profitBarCenterX, profitBarTopY, m.profit)}
                 />
                 {/* Loss Bar - sharp bottom, rounded top */}
                 <path
                   d={createBarPath(lossBarX, lossBarTopY, barWidthHalf, lossBarHeight)}
-                  className="fill-blue-300"
+                  className="fill-blue-300 cursor-pointer"
+                  onMouseEnter={() => handleBarInteraction('loss', lossBarCenterX, lossBarTopY, m.loss)}
+                  onMouseLeave={handleBarLeave}
+                  onClick={() => handleBarInteraction('loss', lossBarCenterX, lossBarTopY, m.loss)}
                 />
                 {/* Month Labels */}
                 <text
@@ -167,42 +210,42 @@ const RevenueChart = ({
                 >
                   {m.month}
                 </text>
-
-                {/* Tooltip for March - centered above Loss bar */}
-                {showTooltip && (
-                  <g>
-                    <rect
-                      x={lossBarCenterX - 45}
-                      y={lossBarTopY - 40}
-                      rx="4"
-                      ry="4"
-                      width="90"
-                      height="32"
-                      fill="white"
-                      stroke="#bbb"
-                      strokeWidth="1"
-                    />
-                    <text
-                      x={lossBarCenterX}
-                      y={lossBarTopY - 24}
-                      textAnchor="middle"
-                      className="fill-gray-600 text-xs"
-                    >
-                      3 March 2025
-                    </text>
-                    <text
-                      x={lossBarCenterX}
-                      y={lossBarTopY - 10}
-                      textAnchor="middle"
-                      className="fill-gray-900 text-xs font-semibold"
-                    >
-                      $16,356
-                    </text>
-                  </g>
-                )}
               </g>
             );
           })}
+
+          {/* Dynamic Tooltip */}
+          {tooltip && (
+            <g>
+              <rect
+                x={tooltip.x - 50}
+                y={tooltip.y - 40}
+                rx="4"
+                ry="4"
+                width="100"
+                height="32"
+                fill="white"
+                stroke="#bbb"
+                strokeWidth="1"
+              />
+              <text
+                x={tooltip.x}
+                y={tooltip.y - 24}
+                textAnchor="middle"
+                className="fill-gray-600 text-xs"
+              >
+                {formatMonthDate(tooltip.month)} 2025
+              </text>
+              <text
+                x={tooltip.x}
+                y={tooltip.y - 10}
+                textAnchor="middle"
+                className="fill-gray-900 text-xs font-semibold"
+              >
+                ${tooltip.value.toLocaleString()}
+              </text>
+            </g>
+          )}
         </svg>
       </div>
     </div>

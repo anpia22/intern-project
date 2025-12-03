@@ -1,6 +1,9 @@
 "use client";
-import { X, Download } from "lucide-react";
+import { X, Download, ChevronDown } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 export default function PaymentReceiptModal({
   open,
@@ -16,6 +19,7 @@ export default function PaymentReceiptModal({
 }) {
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const exportDropdownRef = useRef(null);
+  const receiptContentRef = useRef(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -32,43 +36,67 @@ export default function PaymentReceiptModal({
     };
   }, [showExportDropdown]);
 
-  if (!open) return null;
+  const getFileName = () => {
+    return `Payment_Receipt_${transactionId}_${new Date().toISOString().split('T')[0]}`;
+  };
 
-  const handleDownloadPDF = () => {
+  const getExportData = () => {
+    const headers = ["Field", "Value"];
+    const data = [
+      ["Subscription Plan", `Rs ${planPrice}/- Monthly`],
+      ["Transaction ID", transactionId],
+      ["Payment Date", date],
+      ["Payment Method", method],
+    ];
+
+    if (methodType === "credit") {
+      data.push(
+        ["Card Number", methodDetails.cardNumber || "****5242"],
+        ["Card Holder", methodDetails.cardHolder || "Card Holder"]
+      );
+    } else if (methodType === "bank") {
+      data.push(
+        ["Account Number", methodDetails.accountNo || "****1234"],
+        ["Bank Name", methodDetails.bankName || "Bank Name"],
+        ["Account Holder", methodDetails.accountHolder || "Account Holder"]
+      );
+    } else if (methodType === "check") {
+      data.push(
+        ["Check Number", methodDetails.checkNumber || "CHK-123456"],
+        ["Bank Name", methodDetails.bankName || "Bank Name"],
+        ["Check Date", methodDetails.checkDate || date]
+      );
+    } else if (methodType === "cash") {
+      data.push(["Reference Number", methodDetails.referenceNumber || "REF-XXXX"]);
+    }
+
+    data.push(["Status", "Paid"]);
+    data.push([]);
+    data.push(["Item Details", ""]);
+    data.push(["Description", planTitle]);
+    data.push(["Quantity", "1"]);
+    data.push(["Price", `Rs ${planPrice}/-`]);
+    data.push(["Total", `Rs ${planPrice}/-`]);
+
+    return { headers, data };
+  };
+
+  const handleDownloadCSV = () => {
     setShowExportDropdown(false);
-    // Generate receipt content
-    const receiptContent = `
-PAYMENT RECEIPT
-================
+    const { headers, data } = getExportData();
+    const csvContent = [
+      headers.join(","),
+      ...data.map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+      ),
+    ].join("\n");
 
-Thank you for your payment!
-
-Payment Summary:
-- Subscription Plan: Rs ${planPrice}/- Monthly
-- Transaction ID: ${transactionId}
-- Payment Date: ${date}
-- Payment Method: ${method}
-${methodType === "credit" ? `- Card Number: ${methodDetails.cardNumber || "****5242"}\n- Card Holder: ${methodDetails.cardHolder || "Card Holder"}` : ""}
-${methodType === "bank" ? `- Account Number: ${methodDetails.accountNo || "****1234"}\n- Bank Name: ${methodDetails.bankName || "Bank Name"}\n- Account Holder: ${methodDetails.accountHolder || "Account Holder"}` : ""}
-${methodType === "check" ? `- Check Number: ${methodDetails.checkNumber || "CHK-123456"}\n- Bank Name: ${methodDetails.bankName || "Bank Name"}\n- Check Date: ${methodDetails.checkDate || date}` : ""}
-${methodType === "cash" ? `- Reference Number: ${methodDetails.referenceNumber || "REF-XXXX"}` : ""}
-- Status: Paid
-
-Item Details:
-- ${planTitle}
-- Quantity: 1
-- Price: Rs ${planPrice}/-
-- Total: Rs ${planPrice}/-
-
-Generated on: ${new Date().toLocaleString()}
-    `.trim();
-
-    // Create and download file
-    const blob = new Blob([receiptContent], { type: 'text/plain' });
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Payment_Receipt_${transactionId}_${new Date().toISOString().split('T')[0]}.txt`;
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${getFileName()}.csv`);
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -77,32 +105,71 @@ Generated on: ${new Date().toLocaleString()}
 
   const handleDownloadExcel = () => {
     setShowExportDropdown(false);
-    // Generate CSV content for Excel
-    const csvContent = `Payment Receipt\n\n` +
-      `Subscription Plan,Rs ${planPrice}/- Monthly\n` +
-      `Transaction ID,${transactionId}\n` +
-      `Payment Date,${date}\n` +
-      `Payment Method,${method}\n` +
-      `${methodType === "credit" ? `Card Number,${methodDetails.cardNumber || "****5242"}\nCard Holder,${methodDetails.cardHolder || "Card Holder"}\n` : ""}` +
-      `${methodType === "bank" ? `Account Number,${methodDetails.accountNo || "****1234"}\nBank Name,${methodDetails.bankName || "Bank Name"}\nAccount Holder,${methodDetails.accountHolder || "Account Holder"}\n` : ""}` +
-      `${methodType === "check" ? `Check Number,${methodDetails.checkNumber || "CHK-123456"}\nBank Name,${methodDetails.bankName || "Bank Name"}\nCheck Date,${methodDetails.checkDate || date}\n` : ""}` +
-      `${methodType === "cash" ? `Reference Number,${methodDetails.referenceNumber || "REF-XXXX"}\n` : ""}` +
-      `Status,Paid\n\n` +
-      `Item Details\n` +
-      `Description,Quantity,Price\n` +
-      `${planTitle},1,Rs ${planPrice}/-\n` +
-      `Total,,Rs ${planPrice}/-`;
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Payment_Receipt_${transactionId}_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const { headers, data } = getExportData();
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+    const colWidths = headers.map(() => ({ wch: 25 }));
+    ws["!cols"] = colWidths;
+    XLSX.utils.book_append_sheet(wb, ws, "Payment Receipt");
+    XLSX.writeFile(wb, `${getFileName()}.xlsx`);
   };
+
+  const handleDownloadPDF = async () => {
+    setShowExportDropdown(false);
+    if (!receiptContentRef.current) return;
+
+    try {
+      const canvas = await html2canvas(receiptContentRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 10;
+
+      pdf.setFontSize(18);
+      pdf.text("Payment Receipt", pdfWidth / 2, 15, { align: "center" });
+
+      pdf.addImage(imgData, "PNG", imgX, imgY + 10, imgWidth * ratio, imgHeight * ratio);
+
+      const { headers, data } = getExportData();
+      let yPos = imgY + imgHeight * ratio + 20;
+
+      pdf.setFontSize(10);
+      data.forEach((row, index) => {
+        if (yPos > pdfHeight - 20) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        if (row.length === 2 && row[0] && row[1]) {
+          pdf.text(`${row[0]}: ${row[1]}`, 20, yPos);
+          yPos += 8;
+        } else if (row.length === 1 && row[0]) {
+          pdf.setFontSize(12);
+          pdf.text(row[0], 20, yPos);
+          pdf.setFontSize(10);
+          yPos += 10;
+        } else {
+          yPos += 5;
+        }
+      });
+
+      pdf.save(`${getFileName()}.pdf`);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("Error generating PDF. Please try again.");
+    }
+  };
+
+  if (!open) return null;
 
   const renderMethodSpecificDetails = () => {
     if (!methodDetails || Object.keys(methodDetails).length === 0) return null;
@@ -182,7 +249,7 @@ Generated on: ${new Date().toLocaleString()}
           <X size={22} />
         </button>
 
-        <div className="px-7 py-10">
+        <div ref={receiptContentRef} className="px-7 py-10">
           
           {/* Icon */}
           <div className="flex justify-center mb-6">
@@ -268,25 +335,34 @@ Generated on: ${new Date().toLocaleString()}
           <div className="relative mt-6" ref={exportDropdownRef}>
             <button
               onClick={() => setShowExportDropdown(!showExportDropdown)}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-medium hover:bg-blue-700"
+              className="w-full bg-blue-600 text-white py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-medium hover:bg-blue-700 transition-colors"
             >
               <Download size={18} />
               Download
+              <ChevronDown 
+                size={16} 
+                className={`transition-transform ${showExportDropdown ? "rotate-180" : ""}`}
+              />
             </button>
             {showExportDropdown && (
-              <div className="absolute bottom-full left-0 mb-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+              <div className="absolute bottom-full left-0 mb-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 z-20 overflow-hidden">
                 <button
-                  onClick={handleDownloadPDF}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-t-lg text-gray-700 text-sm"
+                  onClick={handleDownloadCSV}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-100 text-gray-700 text-sm transition-colors flex items-center gap-2"
                 >
-                  Pdf
+                  <span>📄 CSV</span>
                 </button>
-                <hr className="border-gray-200" />
                 <button
                   onClick={handleDownloadExcel}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-b-lg text-gray-700 text-sm"
+                  className="w-full text-left px-4 py-3 hover:bg-gray-100 text-gray-700 text-sm transition-colors flex items-center gap-2 border-t border-gray-200"
                 >
-                  Excel
+                  <span>📊 Excel</span>
+                </button>
+                <button
+                  onClick={handleDownloadPDF}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-100 text-gray-700 text-sm transition-colors flex items-center gap-2 border-t border-gray-200"
+                >
+                  <span>📑 PDF</span>
                 </button>
               </div>
             )}
